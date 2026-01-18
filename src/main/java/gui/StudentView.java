@@ -58,7 +58,7 @@ public class StudentView {
         inputPanel.setPadding(new Insets(20));
         inputPanel.setPrefWidth(340);
 
-        Label header = new Label("Student Manager");
+        Label header = new Label("Add New Student");
         header.getStyleClass().add("header-label");
 
         // Inputs Container
@@ -139,8 +139,16 @@ public class StudentView {
         searchButton.getStyleClass().add("button-primary");
 
         avgButton = new Button("Class Average");
+        avgButton.getStyleClass().add("button-info");
+        avgButton.setTooltip(new Tooltip("Calculate average grade of all students"));
+
         exportButton = new Button("Export CSV");
+        exportButton.getStyleClass().add("button-success");
+        exportButton.setTooltip(new Tooltip("Save student data to a CSV file"));
+
         importButton = new Button("Import CSV");
+        importButton.getStyleClass().add("button-success");
+        importButton.setTooltip(new Tooltip("Load student data from a CSV file"));
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -203,6 +211,13 @@ public class StudentView {
         BorderPane.setMargin(inputPanel, new Insets(10));
         BorderPane.setMargin(topPanel, new Insets(10, 10, 0, 0));
         BorderPane.setMargin(tabPane, new Insets(10, 10, 10, 0));
+
+        // Entrance Animation
+        javafx.animation.FadeTransition fade = new javafx.animation.FadeTransition(javafx.util.Duration.millis(800),
+                mainLayout);
+        fade.setFromValue(0);
+        fade.setToValue(1);
+        fade.play();
     }
 
     @SuppressWarnings("unchecked")
