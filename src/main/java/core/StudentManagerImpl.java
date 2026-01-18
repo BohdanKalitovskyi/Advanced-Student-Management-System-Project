@@ -1,3 +1,5 @@
+package core;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -7,7 +9,17 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * Implementation of StudentManager using SQLite database.
+ * Changes:
+ * - Added SLF4J logging.
+ * - Transactions for critical operations.
+ */
 public class StudentManagerImpl implements StudentManager {
+    private static final Logger logger = LoggerFactory.getLogger(StudentManagerImpl.class);
 
     private static StudentManagerImpl instance;
 
@@ -32,30 +44,67 @@ public class StudentManagerImpl implements StudentManager {
 
     @Override
     public void addStudent(Student student) {
-        if (studentExists(student.getStudentID())) {
-            System.out.println("Student with ID " + student.getStudentID() + " already exists!");
-            return;
-        }
-
-        String sql = """
+        String checkSql = "SELECT 1 FROM students WHERE studentID = ?";
+        String insertSql = """
                     INSERT INTO students (studentID, name, age, grade, enrollmentDate)
                     VALUES (?, ?, ?, ?, ?)
                 """;
 
-        try (Connection conn = getConnection();
-                PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = getConnection()) {
+            conn.setAutoCommit(false);
 
-            ps.setString(1, student.getStudentID());
-            ps.setString(2, student.getName());
-            ps.setInt(3, student.getAge());
-            ps.setDouble(4, student.getGrade());
-            ps.setString(5, student.getEnrollmentDate().toString());
+            try (PreparedStatement checkPs = conn.prepareStatement(checkSql)) {
+                checkPs.setString(1, student.getStudentID());
+                try (ResultSet rs = checkPs.executeQuery()) {
+                    if (rs.next()) {
+                        logger.warn("Attempted to add existing student with ID: {}", student.getStudentID());
+                        conn.rollback();
+                        return;
+                    }
+                }
 
-            ps.executeUpdate();
+                try (PreparedStatement insertPs = conn.prepareStatement(insertSql)) {
+                    insertPs.setString(1, student.getStudentID());
+                    insertPs.setString(2, student.getName());
+                    insertPs.setInt(3, student.getAge());
+                    insertPs.setDouble(4, student.getGrade());
+                    insertPs.setString(5, student.getEnrollmentDate().toString());
+                    insertPs.setString(5, student.getEnrollmentDate().toString());
+                    insertPs.executeUpdate();
+                }
+
+                // Insert courses/enrollments
+                if (student.getCourses() != null && !student.getCourses().isEmpty()) {
+                    String courseSql = "INSERT OR IGNORE INTO courses(courseCode, courseName, credits) VALUES (?, ?, ?)";
+                    String enrollSql = "INSERT OR IGNORE INTO enrollments(studentID, courseCode, enrollmentGrade) VALUES (?, ?, ?)";
+
+                    try (PreparedStatement coursePs = conn.prepareStatement(courseSql);
+                            PreparedStatement enrollPs = conn.prepareStatement(enrollSql)) {
+
+                        for (String course : student.getCourses()) {
+                            // Ensure course exists
+                            coursePs.setString(1, course);
+                            coursePs.setString(2, "Course " + course); // Default name
+                            coursePs.setInt(3, 4); // Default credits
+                            coursePs.executeUpdate();
+
+                            // Enroll student
+                            enrollPs.setString(1, student.getStudentID());
+                            enrollPs.setString(2, course);
+                            enrollPs.setDouble(3, 0.0);
+                            enrollPs.executeUpdate();
+                        }
+                    }
+                }
+
+                conn.commit();
+            } catch (SQLException e) {
+                conn.rollback();
+                logger.error("Database error while adding student (Transaction rolled back)", e);
+            }
 
         } catch (SQLException e) {
-            System.err.println("Database error: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Database connection error", e);
         }
     }
 
@@ -160,16 +209,21 @@ public class StudentManagerImpl implements StudentManager {
                     FROM students s
                     LEFT JOIN enrollments e ON s.studentID = e.studentID
                     LEFT JOIN courses c ON e.courseCode = c.courseCode
-                    WHERE s.name LIKE ? OR s.studentID LIKE ? OR c.courseCode LIKE ?
+                    WHERE s.name LIKE ?
+                       OR s.studentID LIKE ?
+                       OR c.courseCode LIKE ?
+                       OR c.courseName LIKE ?
+                       OR CAST(s.age AS TEXT) LIKE ?
+                       OR CAST(s.grade AS TEXT) LIKE ?
                 """;
 
         try (Connection conn = getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
 
             String pattern = "%" + query + "%";
-            ps.setString(1, pattern);
-            ps.setString(2, pattern);
-            ps.setString(3, pattern);
+            for (int i = 1; i <= 6; i++) {
+                ps.setString(i, pattern);
+            }
 
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -206,19 +260,23 @@ public class StudentManagerImpl implements StudentManager {
     public void exportStudentsToCSV(String filePath) {
         try (PrintWriter writer = new PrintWriter(new FileWriter(filePath))) {
 
-            writer.println("name,age,grade,enrollmentDate");
+            writer.println("name,age,grade,enrollmentDate,courses");
 
             for (Student s : displayAllStudents()) {
                 writer.printf(
-                        "%s,%d,%.2f,%s%n",
+                        "%s,%d,%.2f,%s,",
                         s.getName(),
                         s.getAge(),
                         s.getGrade(),
                         s.getEnrollmentDate());
+
+                String courses = String.join(";", s.getCourses());
+                writer.print(courses);
+                writer.println();
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error exporting students to CSV", e);
         }
     }
 
@@ -230,17 +288,24 @@ public class StudentManagerImpl implements StudentManager {
             while ((line = br.readLine()) != null) {
                 try {
                     String[] data = line.split(",");
+                    ArrayList<String> courses = new ArrayList<>();
+                    if (data.length > 4 && !data[4].isBlank()) {
+                        String[] courseList = data[4].split(";");
+                        for (String c : courseList) {
+                            courses.add(c.trim());
+                        }
+                    }
                     Student s = new Student(data[0], Integer.parseInt(data[1]), Double.parseDouble(data[2]),
-                            LocalDate.parse(data[3]), new ArrayList<>());
+                            LocalDate.parse(data[3]), courses);
                     addStudent(s);
                     count++;
                 } catch (Exception ex) {
-                    System.err.println("Skipping invalid line: " + line);
+                    logger.warn("Skipping invalid line: {}", line);
                 }
             }
-            System.out.println(count + " students imported successfully.");
+            logger.info("{} students imported successfully.", count);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error importing students from CSV", e);
         }
     }
 
@@ -260,19 +325,17 @@ public class StudentManagerImpl implements StudentManager {
 
                 psEnroll.setString(1, studentID);
                 psEnroll.setString(2, courseCode);
-                psEnroll.setDouble(3, 0.0); // початкова оцінка
+                psEnroll.setDouble(3, 0.0); // initial grade
                 psEnroll.executeUpdate();
 
                 conn.commit();
             } catch (SQLException e) {
                 conn.rollback();
-                System.err.println("Database error: " + e.getMessage());
-                e.printStackTrace();
+                logger.error("Transaction failed, rolled back", e);
             }
 
         } catch (SQLException e) {
-            System.err.println("Database error: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Database error outside transaction during course addition", e);
         }
     }
 
@@ -287,8 +350,7 @@ public class StudentManagerImpl implements StudentManager {
             ps.executeUpdate();
 
         } catch (SQLException e) {
-            System.err.println("Database error: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Database error while removing course", e);
         }
     }
 
@@ -302,7 +364,7 @@ public class StudentManagerImpl implements StudentManager {
             return rs.next();
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error("Database error while checking student existence", e);
             return false;
         }
     }

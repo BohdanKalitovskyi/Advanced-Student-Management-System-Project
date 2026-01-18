@@ -1,4 +1,6 @@
-import Exceptions.*;
+package core;
+
+import core.exceptions.*;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -6,6 +8,10 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * Represents a student in the system.
+ * Includes details such as name, age, grade, and enrolled courses.
+ */
 public class Student {
     private String name;
     private int age;
@@ -24,11 +30,11 @@ public class Student {
     }
 
     public Student(String studentID,
-                   String name,
-                   int age,
-                   double grade,
-                   LocalDate enrollmentDate,
-                   ArrayList<String> courses) {
+            String name,
+            int age,
+            double grade,
+            LocalDate enrollmentDate,
+            ArrayList<String> courses) {
 
         this.studentID = studentID;
         this.name = name;
@@ -53,7 +59,8 @@ public class Student {
 
     public void setName(String name) {
         if (name == null || !name.matches("[a-zA-Z\\s-]+")) {
-            throw new InvalidNameException("Only letters, spaces, hyphens allowed");}
+            throw new InvalidNameException("Only letters, spaces, hyphens allowed");
+        }
         this.name = name;
     }
 
@@ -124,8 +131,10 @@ public class Student {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Student)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof Student))
+            return false;
         Student student = (Student) o;
         return studentID.equals(student.studentID);
     }

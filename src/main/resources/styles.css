@@ -1,0 +1,260 @@
+/* Base - Elegant & Minimalist */
+.root {
+    -fx-base: #f8f9fa;
+    -fx-font-family: 'Inter', 'Segoe UI', 'San Francisco', 'Helvetica Neue', sans-serif;
+    -fx-font-size: 14px;
+    -fx-text-fill: #2d3436;
+}
+
+/* Panel Containers */
+.card {
+    -fx-background-color: white;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.05), 15, 0, 0, 2);
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-color: #f1f2f6;
+    -fx-border-width: 1;
+}
+
+/* Headers */
+.header-label {
+    -fx-font-size: 24px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #2d3436;
+    -fx-padding: 0 0 15 0;
+}
+
+/* Inputs (Fields, Spinners, DatePickers) */
+.text-field,
+.spinner,
+.date-picker,
+.list-view {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #dfe6e9;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-padding: 8;
+    -fx-font-size: 13px;
+}
+
+.text-field:focused,
+.spinner:focused,
+.date-picker:focused {
+    -fx-border-color: #74b9ff;
+    -fx-effect: dropshadow(three-pass-box, rgba(116, 185, 255, 0.2), 5, 0, 0, 0);
+}
+
+.list-view {
+    -fx-padding: 2;
+}
+
+.list-view .list-cell {
+    -fx-padding: 5 10;
+    -fx-background-color: transparent;
+}
+
+.list-view .list-cell:filled:selected:focused,
+.list-view .list-cell:filled:selected {
+    -fx-background-color: #f0f3f7;
+    -fx-text-fill: #0984e3;
+    -fx-background-radius: 4;
+}
+
+/* Buttons - Flat & Minimal */
+.button {
+    -fx-font-weight: 600;
+    -fx-cursor: hand;
+    -fx-padding: 10 20;
+    -fx-background-radius: 6;
+    -fx-border-radius: 6;
+    -fx-background-insets: 0;
+    -fx-font-size: 13px;
+    -fx-effect: none;
+    /* No shadow by default for cleaner look */
+    -fx-transition: all 0.2s ease-in-out;
+}
+
+/* Primary Action (Add / Search) */
+.button-primary {
+    -fx-background-color: #0984e3;
+    -fx-text-fill: white;
+}
+
+.button-primary:hover {
+    -fx-background-color: #0c90f2;
+    -fx-effect: dropshadow(three-pass-box, rgba(9, 132, 227, 0.3), 8, 0, 0, 2);
+}
+
+/* Neutral Actions */
+.button-neutral {
+    -fx-background-color: #f1f2f6;
+    -fx-text-fill: #636e72;
+}
+
+.button-neutral:hover {
+    -fx-background-color: #dfe6e9;
+    -fx-text-fill: #2d3436;
+}
+
+/* Warning Action (Update) */
+.button-warning {
+    -fx-background-color: #fdcb6e;
+    -fx-text-fill: #2d3436;
+    /* Darker text for contrast on yellow */
+}
+
+.button-warning:hover {
+    -fx-background-color: #e1b12c;
+}
+
+/* Danger Action (Remove) */
+.button-danger {
+    -fx-background-color: #ff7675;
+    -fx-text-fill: white;
+}
+
+.button-danger:hover {
+    -fx-background-color: #d63031;
+}
+
+/* Ghost Button (Refresh) */
+.button-ghost {
+    -fx-background-color: transparent;
+    -fx-border-color: #b2bec3;
+    -fx-border-width: 1;
+    -fx-text-fill: #636e72;
+}
+
+.button-ghost:hover {
+    -fx-background-color: #f1f2f6;
+    -fx-border-color: #636e72;
+    -fx-text-fill: #2d3436;
+}
+
+/* Table View */
+.table-view {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-color: #dfe6e9;
+}
+
+.table-view .column-header {
+    -fx-background-color: transparent;
+}
+
+.table-view .column-header .label {
+    -fx-font-weight: 700;
+    -fx-text-fill: #636e72;
+    -fx-padding: 10 0;
+}
+
+.table-row-cell {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent #f1f2f6 transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-font-size: 14px;
+    /* Larger font for rows */
+    -fx-padding: 5 0;
+    /* More row spacing */
+}
+
+.table-row-cell:odd {
+    -fx-background-color: #ffffff;
+}
+
+.table-row-cell:even {
+    -fx-background-color: #fafbfd;
+}
+
+.table-row-cell:filled:selected {
+    -fx-background-color: #e6f2ff;
+    /* Very light blue for selection */
+    -fx-background-insets: 0;
+}
+
+.table-row-cell:filled:selected .text {
+    -fx-fill: #0984e3;
+    /* Blue text on selection */
+}
+
+/* Tabs */
+.tab-pane {
+    -fx-tab-min-height: 40px;
+}
+
+.tab-pane .tab-header-area .tab-header-background {
+    -fx-background-color: transparent;
+}
+
+.tab {
+    -fx-background-color: transparent;
+    -fx-padding: 10 20;
+    -fx-border-width: 0 0 2 0;
+    -fx-border-color: transparent;
+}
+
+.tab:selected {
+    -fx-border-color: #0984e3;
+    -fx-background-color: transparent;
+}
+
+.tab .tab-label {
+    -fx-text-fill: #b2bec3;
+    -fx-font-weight: 600;
+    -fx-font-size: 14px;
+}
+
+.tab:selected .tab-label {
+    -fx-text-fill: #0984e3;
+}
+
+/* ScrollBars - thinner and cleaner */
+.scroll-bar:vertical,
+.scroll-bar:horizontal {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar .thumb {
+    -fx-background-color: #dfe6e9;
+    -fx-background-radius: 4;
+}
+
+.scroll-bar .thumb:hover {
+    -fx-background-color: #b2bec3;
+}
+
+/* Charts */
+.chart {
+    -fx-padding: 20px;
+}
+
+.chart-bar {
+    -fx-background-color: #74b9ff;
+    -fx-bar-fill: #74b9ff;
+    -fx-background-radius: 4 4 0 0;
+}
+
+.default-color0.chart-bar {
+    -fx-bar-fill: #0984e3;
+}
+
+.default-color1.chart-bar {
+    -fx-bar-fill: #00cec9;
+}
+
+.default-color2.chart-bar {
+    -fx-bar-fill: #fdcb6e;
+}
+
+.default-color3.chart-bar {
+    -fx-bar-fill: #ff7675;
+}
+
+.default-color4.chart-bar {
+    -fx-bar-fill: #6c5ce7;
+}

@@ -1,3 +1,5 @@
+package core;
+
 public class Course {
     private String courseCode;
     private String courseName;
@@ -9,7 +11,15 @@ public class Course {
         this.credits = credits;
     }
 
-    public String getCourseCode() { return courseCode; }
-    public String getCourseName() { return courseName; }
-    public int getCredits() { return credits; }
+    public String getCourseCode() {
+        return courseCode;
+    }
+
+    public String getCourseName() {
+        return courseName;
+    }
+
+    public int getCredits() {
+        return credits;
+    }
 }

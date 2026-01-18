@@ -1,8 +1,11 @@
+package core;
+
+import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-public final class TestConnectionFactory {
+public class TestConnectionFactory {
 
     private static String backendUrl = "jdbc:sqlite::memory:";
 
