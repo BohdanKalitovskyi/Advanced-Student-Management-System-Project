@@ -3,6 +3,11 @@ import java.util.ArrayList;
 
 class Main{
     public static void main(String[] args){
+        Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
+            System.out.println("Unhandled exception: " + e.getMessage());
+            e.printStackTrace();
+        });
+
         Student student1 = new Student("John Doe", 20, 88.75);
 
         student1.addCourse("CS1");
@@ -42,7 +47,7 @@ class Main{
 
 
 
-        StudentManager manager = StudentManagerImpl.getInstance();
+        StudentManagerImpl manager = StudentManagerImpl.getInstance();
 
 
         Student s1 = new Student("John Doe", 20, 85.5,
@@ -97,6 +102,22 @@ class Main{
 
 
         // manager.importStudentsFromCSV("students.csv");
+
+        manager.addCourseToStudent(s2.getStudentID(), "CS101", "Computer Science 101", 4);
+
+        System.out.println("=== ALL STUDENTS ===");
+        for (Student s : manager.displayAllStudents()) {
+            System.out.println(s.displayInfo());
+            System.out.println("-------------------");
+        }
+
+        manager.removeCourseFromStudent(s2.getStudentID(), "CS101");
+        System.out.println("=== ALL STUDENTS ===");
+        for (Student s : manager.displayAllStudents()) {
+            System.out.println(s.displayInfo());
+            System.out.println("-------------------");
+        }
+
     }
 
 }

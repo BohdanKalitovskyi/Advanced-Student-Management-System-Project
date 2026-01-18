@@ -1,3 +1,5 @@
+import Exceptions.*;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Objects;
@@ -51,8 +53,7 @@ public class Student {
 
     public void setName(String name) {
         if (name == null || !name.matches("[a-zA-Z\\s-]+")) {
-            throw new IllegalArgumentException("Invalid name. Only letters, spaces, and hyphens are allowed.");
-        }
+            throw new InvalidNameException("Only letters, spaces, hyphens allowed");}
         this.name = name;
     }
 
@@ -62,7 +63,7 @@ public class Student {
 
     public void setAge(int age) {
         if (age < 18 || age > 100) {
-            throw new IllegalArgumentException("Age must be between 18 and 100.");
+            throw new InvalidAgeException("Age must be 18-100");
         }
         this.age = age;
     }
@@ -73,7 +74,7 @@ public class Student {
 
     public void setGrade(double grade) {
         if (grade < 0.0 || grade > 100.0) {
-            throw new IllegalArgumentException("Grade must be between 0.0 and 100.0.");
+            throw new InvalidGradeException("Grade must be 0-100");
         }
         this.grade = Math.round(grade * 100.0) / 100.0;
     }
