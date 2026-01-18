@@ -11,7 +11,15 @@ public class StudentManagerImpl implements StudentManager {
 
     private static StudentManagerImpl instance;
 
-    private StudentManagerImpl() {
+    protected Connection getConnection() throws SQLException {
+        return ConnectionFactory.getConnection();
+    }
+
+    protected StudentManagerImpl() {
+        initializeDatabase();
+    }
+
+    protected void initializeDatabase() {
         DatabaseInitializer.initialize();
     }
 
@@ -30,12 +38,12 @@ public class StudentManagerImpl implements StudentManager {
         }
 
         String sql = """
-        INSERT INTO students (studentID, name, age, grade, enrollmentDate)
-        VALUES (?, ?, ?, ?, ?)
-    """;
+                    INSERT INTO students (studentID, name, age, grade, enrollmentDate)
+                    VALUES (?, ?, ?, ?, ?)
+                """;
 
-        try (Connection conn = ConnectionFactory.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, student.getStudentID());
             ps.setString(2, student.getName());
@@ -55,8 +63,8 @@ public class StudentManagerImpl implements StudentManager {
     public void removeStudent(String studentID) {
         String sql = "DELETE FROM students WHERE studentID = ?";
 
-        try (Connection conn = ConnectionFactory.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, studentID);
             ps.executeUpdate();
@@ -70,13 +78,13 @@ public class StudentManagerImpl implements StudentManager {
     @Override
     public void updateStudent(String studentID, Student updatedStudent) {
         String sql = """
-        UPDATE students
-        SET name = ?, age = ?, grade = ?, enrollmentDate = ?
-        WHERE studentID = ?
-    """;
+                    UPDATE students
+                    SET name = ?, age = ?, grade = ?, enrollmentDate = ?
+                    WHERE studentID = ?
+                """;
 
-        try (Connection conn = ConnectionFactory.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, updatedStudent.getName());
             ps.setInt(2, updatedStudent.getAge());
@@ -98,9 +106,9 @@ public class StudentManagerImpl implements StudentManager {
 
         String sql = "SELECT * FROM students";
 
-        try (Connection conn = ConnectionFactory.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+        try (Connection conn = getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 Student s = new Student(
@@ -109,8 +117,7 @@ public class StudentManagerImpl implements StudentManager {
                         rs.getInt("age"),
                         rs.getDouble("grade"),
                         LocalDate.parse(rs.getString("enrollmentDate")),
-                        new ArrayList<>()
-                );
+                        new ArrayList<>());
 
                 try (PreparedStatement psCourses = conn.prepareStatement(
                         "SELECT c.courseCode FROM courses c " +
@@ -122,7 +129,6 @@ public class StudentManagerImpl implements StudentManager {
                         s.addCourse(rsCourses.getString("courseCode"));
                     }
                 }
-
 
                 students.add(s);
             }
@@ -150,15 +156,15 @@ public class StudentManagerImpl implements StudentManager {
     public ArrayList<Student> searchStudents(String query) {
         ArrayList<Student> result = new ArrayList<>();
         String sql = """
-        SELECT DISTINCT s.*
-        FROM students s
-        LEFT JOIN enrollments e ON s.studentID = e.studentID
-        LEFT JOIN courses c ON e.courseCode = c.courseCode
-        WHERE s.name LIKE ? OR s.studentID LIKE ? OR c.courseCode LIKE ?
-    """;
+                    SELECT DISTINCT s.*
+                    FROM students s
+                    LEFT JOIN enrollments e ON s.studentID = e.studentID
+                    LEFT JOIN courses c ON e.courseCode = c.courseCode
+                    WHERE s.name LIKE ? OR s.studentID LIKE ? OR c.courseCode LIKE ?
+                """;
 
-        try (Connection conn = ConnectionFactory.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             String pattern = "%" + query + "%";
             ps.setString(1, pattern);
@@ -174,8 +180,7 @@ public class StudentManagerImpl implements StudentManager {
                         rs.getInt("age"),
                         rs.getDouble("grade"),
                         LocalDate.parse(rs.getString("enrollmentDate")),
-                        new ArrayList<>()
-                );
+                        new ArrayList<>());
 
                 try (PreparedStatement psCourses = conn.prepareStatement(
                         "SELECT courseCode FROM enrollments WHERE studentID = ?")) {
@@ -209,8 +214,7 @@ public class StudentManagerImpl implements StudentManager {
                         s.getName(),
                         s.getAge(),
                         s.getGrade(),
-                        s.getEnrollmentDate()
-                );
+                        s.getEnrollmentDate());
             }
 
         } catch (Exception e) {
@@ -226,7 +230,8 @@ public class StudentManagerImpl implements StudentManager {
             while ((line = br.readLine()) != null) {
                 try {
                     String[] data = line.split(",");
-                    Student s = new Student(data[0], Integer.parseInt(data[1]), Double.parseDouble(data[2]), LocalDate.parse(data[3]), new ArrayList<>());
+                    Student s = new Student(data[0], Integer.parseInt(data[1]), Double.parseDouble(data[2]),
+                            LocalDate.parse(data[3]), new ArrayList<>());
                     addStudent(s);
                     count++;
                 } catch (Exception ex) {
@@ -239,15 +244,14 @@ public class StudentManagerImpl implements StudentManager {
         }
     }
 
-
     public void addCourseToStudent(String studentID, String courseCode, String courseName, int credits) {
-        try (Connection conn = ConnectionFactory.getConnection()) {
+        try (Connection conn = getConnection()) {
             conn.setAutoCommit(false);
 
             try (PreparedStatement psCourse = conn.prepareStatement(
                     "INSERT OR IGNORE INTO courses(courseCode, courseName, credits) VALUES (?, ?, ?)");
-                 PreparedStatement psEnroll = conn.prepareStatement(
-                         "INSERT OR IGNORE INTO enrollments(studentID, courseCode, enrollmentGrade) VALUES (?, ?, ?)")) {
+                    PreparedStatement psEnroll = conn.prepareStatement(
+                            "INSERT OR IGNORE INTO enrollments(studentID, courseCode, enrollmentGrade) VALUES (?, ?, ?)")) {
 
                 psCourse.setString(1, courseCode);
                 psCourse.setString(2, courseName);
@@ -275,8 +279,8 @@ public class StudentManagerImpl implements StudentManager {
     public void removeCourseFromStudent(String studentID, String courseCode) {
         String sql = "DELETE FROM enrollments WHERE studentID = ? AND courseCode = ?";
 
-        try (Connection conn = ConnectionFactory.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, studentID);
             ps.setString(2, courseCode);
@@ -290,8 +294,8 @@ public class StudentManagerImpl implements StudentManager {
 
     public boolean studentExists(String studentID) {
         String sql = "SELECT 1 FROM students WHERE studentID = ?";
-        try (Connection conn = ConnectionFactory.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, studentID);
             ResultSet rs = ps.executeQuery();
