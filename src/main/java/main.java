@@ -39,5 +39,16 @@ class Main{
 
         System.out.println("Student 1 ID: " + student1.getStudentID());
         System.out.println("Student 2 ID: " + student2.getStudentID());
+
+
+
+        StudentManager manager = StudentManagerImpl.getInstance();
+
+        Student s = new Student("John Doe", 20, 85.5);
+        manager.addStudent(s);
+
+        System.out.println("Student added successfully.");
+        System.out.println("DB location: " + new java.io.File("students.db").getAbsolutePath());
+
     }
 }
