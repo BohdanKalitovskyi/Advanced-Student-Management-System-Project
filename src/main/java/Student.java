@@ -21,6 +21,21 @@ public class Student {
         this.courses = new ArrayList<>();
     }
 
+    public Student(String studentID,
+                   String name,
+                   int age,
+                   double grade,
+                   LocalDate enrollmentDate,
+                   ArrayList<String> courses) {
+
+        this.studentID = studentID;
+        this.name = name;
+        this.age = age;
+        this.grade = grade;
+        this.enrollmentDate = enrollmentDate;
+        this.courses = courses;
+    }
+
     public Student(String name, int age, double grade, LocalDate enrollmentDate, ArrayList<String> courses) {
         this.name = name;
         this.age = age;

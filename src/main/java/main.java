@@ -44,11 +44,59 @@ class Main{
 
         StudentManager manager = StudentManagerImpl.getInstance();
 
-        Student s = new Student("John Doe", 20, 85.5);
-        manager.addStudent(s);
 
-        System.out.println("Student added successfully.");
-        System.out.println("DB location: " + new java.io.File("students.db").getAbsolutePath());
+        Student s1 = new Student("John Doe", 20, 85.5,
+                LocalDate.of(2024, 9, 1), new ArrayList<>());
 
+        Student s2 = new Student("Alice Smith", 22, 92.0,
+                LocalDate.of(2023, 9, 1), new ArrayList<>());
+
+        manager.addStudent(s1);
+        manager.addStudent(s2);
+
+
+        System.out.println("=== ALL STUDENTS ===");
+        for (Student s : manager.displayAllStudents()) {
+            System.out.println(s.displayInfo());
+            System.out.println("-------------------");
+        }
+
+
+        double avg = manager.calculateAverageGrade();
+        System.out.println("Average grade: " + avg);
+
+
+        System.out.println("=== SEARCH 'Alice' ===");
+        manager.searchStudents("Alice")
+                .forEach(st -> System.out.println(st.getName()));
+
+
+        Student updated = new Student(
+                "Alice Johnson",
+                23,
+                95.0,
+                LocalDate.of(2023, 9, 1),
+                new ArrayList<>()
+        );
+
+        manager.updateStudent(s2.getStudentID(), updated);
+
+        System.out.println("=== AFTER UPDATE ===");
+        manager.displayAllStudents()
+                .forEach(st -> System.out.println(st.getName() + " " + st.getGrade()));
+
+
+        manager.removeStudent(s1.getStudentID());
+
+        System.out.println("=== AFTER DELETE ===");
+        manager.displayAllStudents()
+                .forEach(st -> System.out.println(st.getName()));
+
+
+        manager.exportStudentsToCSV("students.csv");
+
+
+        // manager.importStudentsFromCSV("students.csv");
     }
+
 }
