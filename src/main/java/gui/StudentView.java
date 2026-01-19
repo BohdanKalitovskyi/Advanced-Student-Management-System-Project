@@ -9,6 +9,42 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
 
+/**
+ * View component of the MVC pattern for the Student Management GUI.
+ * 
+ * <p>
+ * This class is responsible for creating and managing all UI components
+ * including:
+ * </p>
+ * <ul>
+ * <li>Input forms for student data entry (name, age, grade, enrollment date,
+ * courses)</li>
+ * <li>Action buttons (Add, Update, Remove, Refresh, Search, Import,
+ * Export)</li>
+ * <li>Student table with pagination support</li>
+ * <li>Grade distribution bar chart</li>
+ * <li>System logs text area</li>
+ * <li>Student details modal dialog</li>
+ * </ul>
+ * 
+ * <p>
+ * The view uses custom CSS styling loaded from resources/styles.css for a
+ * modern,
+ * professional appearance. It implements input validation, fade-in animations,
+ * and
+ * responsive layout using JavaFX BorderPane.
+ * </p>
+ * 
+ * <p>
+ * The view is passive - it does not contain business logic. All event handling
+ * is delegated to the StudentController through getter methods that expose UI
+ * components.
+ * </p>
+ * 
+ * @author Student Management System Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class StudentView {
     private BorderPane mainLayout;
 
@@ -167,6 +203,13 @@ public class StudentView {
         studentTable = new TableView<>();
         setupTable();
 
+        // Show student details on double-click
+        studentTable.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 2 && studentTable.getSelectionModel().getSelectedItem() != null) {
+                showStudentDetails(studentTable.getSelectionModel().getSelectedItem());
+            }
+        });
+
         pagination = new Pagination(1, 0);
         // We will let the controller handle the factory, but we need to initialize it
         // here or leave it empty?
@@ -218,6 +261,73 @@ public class StudentView {
         fade.setFromValue(0);
         fade.setToValue(1);
         fade.play();
+    }
+
+    private void showStudentDetails(Student student) {
+        javafx.stage.Stage detailsStage = new javafx.stage.Stage();
+        detailsStage.setTitle("Student Profile");
+        detailsStage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+
+        VBox content = new VBox(20);
+        content.setPadding(new Insets(40));
+        content.getStyleClass().add("student-details-popup");
+
+        // Student Name - BIG HEADER
+        Label nameLabel = new Label(student.getName());
+        nameLabel.getStyleClass().add("student-name-header");
+
+        // Details Grid
+        GridPane grid = new GridPane();
+        grid.setHgap(30);
+        grid.setVgap(18);
+        grid.setPadding(new Insets(15, 0, 15, 0));
+
+        addDetailRow(grid, 0, "Student ID:", student.getStudentID());
+        addDetailRow(grid, 1, "Age:", String.valueOf(student.getAge()) + " years");
+        addDetailRow(grid, 2, "Grade:", String.format("%.2f%%", student.getGrade()));
+        addDetailRow(grid, 3, "Enrollment Date:", student.getEnrollmentDate().toString());
+
+        String courses = (student.getCourses() != null && !student.getCourses().isEmpty())
+                ? String.join(", ", student.getCourses())
+                : "No courses enrolled";
+        addDetailRow(grid, 4, "Courses:", courses);
+
+        // Close Button
+        Button closeBtn = new Button("Close");
+        closeBtn.getStyleClass().addAll("button", "button-primary");
+        closeBtn.setPrefWidth(140);
+        closeBtn.setOnAction(e -> detailsStage.close());
+
+        HBox buttonBox = new HBox(closeBtn);
+        buttonBox.setAlignment(javafx.geometry.Pos.CENTER);
+        buttonBox.setPadding(new Insets(15, 0, 0, 0));
+
+        Separator sep1 = new Separator();
+        sep1.getStyleClass().add("popup-separator");
+        Separator sep2 = new Separator();
+        sep2.getStyleClass().add("popup-separator");
+
+        content.getChildren().addAll(nameLabel, sep1, grid, sep2, buttonBox);
+
+        javafx.scene.Scene scene = new javafx.scene.Scene(content, 520, 460);
+        scene.getStylesheets().addAll(mainLayout.getScene().getStylesheets());
+
+        detailsStage.setScene(scene);
+        detailsStage.setResizable(false);
+        detailsStage.show();
+    }
+
+    private void addDetailRow(GridPane grid, int row, String label, String value) {
+        Label lbl = new Label(label);
+        lbl.getStyleClass().add("detail-label");
+
+        Label val = new Label(value);
+        val.getStyleClass().add("detail-value");
+        val.setWrapText(true);
+        val.setMaxWidth(300);
+
+        grid.add(lbl, 0, row);
+        grid.add(val, 1, row);
     }
 
     @SuppressWarnings("unchecked")

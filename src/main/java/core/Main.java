@@ -5,7 +5,44 @@ import java.util.ArrayList;
 import core.exceptions.*;
 import java.io.IOException;
 
+/**
+ * Console-based entry point for the Student Management System.
+ * 
+ * <p>
+ * This class provides a command-line demonstration of the system's core
+ * functionality
+ * including student creation, CRUD operations, searching, and CSV export. It
+ * sets up
+ * a global exception handler and demonstrates various features of the
+ * StudentManager.
+ * </p>
+ * 
+ * <p>
+ * For the graphical user interface, use {@link gui.Launcher} instead.
+ * </p>
+ * 
+ * @author Student Management System Team
+ * @version 1.0
+ * @since 1.0
+ */
 class Main {
+        /**
+         * Main entry point for the console application.
+         * 
+         * <p>
+         * This method demonstrates the following features:
+         * </p>
+         * <ul>
+         * <li>Creating students with validation</li>
+         * <li>Managing course enrollments</li>
+         * <li>Adding, updating, and removing students from the database</li>
+         * <li>Searching for students</li>
+         * <li>Calculating average grades</li>
+         * <li>Exporting data to CSV</li>
+         * </ul>
+         * 
+         * @param args command-line arguments (not used)
+         */
         public static void main(String[] args) {
                 Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
                         System.out.println("Unhandled exception: " + e.getMessage());

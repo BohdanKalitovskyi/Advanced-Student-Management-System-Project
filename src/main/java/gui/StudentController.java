@@ -15,7 +15,40 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Optional;
 
+/**
+ * Controller component of the MVC pattern for the Student Management GUI.
+ * 
+ * <p>
+ * This class handles all user interactions and coordinates between the
+ * StudentView
+ * (presentation layer) and StudentManagerImpl (business logic layer). It
+ * manages:
+ * </p>
+ * <ul>
+ * <li>Event handling for all UI buttons and controls</li>
+ * <li>Background task execution for database operations</li>
+ * <li>Pagination of student data (15 rows per page)</li>
+ * <li>Real-time search functionality</li>
+ * <li>Data validation and error handling</li>
+ * <li>Chart updates for grade distribution</li>
+ * </ul>
+ * 
+ * <p>
+ * All database operations are executed in background threads to prevent UI
+ * freezing.
+ * The controller uses JavaFX Task API for asynchronous operations with proper
+ * success
+ * and failure handlers.
+ * </p>
+ * 
+ * @author Student Management System Team
+ * @version 1.0
+ * @since 1.0
+ */
 public class StudentController {
+    /**
+     * Number of student rows displayed per page in the table.
+     */
     private static final int ROWS_PER_PAGE = 15;
 
     private StudentView view;
@@ -128,6 +161,12 @@ public class StudentController {
                 grade = Double.parseDouble(gradeText);
             } catch (NumberFormatException e) {
                 showAlert("Validation Error", "Grade must be a valid number.");
+                return;
+            }
+
+            // Validate grade range
+            if (grade < 0 || grade > 100) {
+                showAlert("Validation Error", "Grade must be between 0 and 100.");
                 return;
             }
 

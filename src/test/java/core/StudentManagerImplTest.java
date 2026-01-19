@@ -8,6 +8,37 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
+/**
+ * JUnit 5 test suite for StudentManagerImpl class.
+ * 
+ * <p>
+ * This test class verifies the functionality of all CRUD operations, search,
+ * CSV import/export, and course management features. It uses a temporary SQLite
+ * database for testing to avoid affecting the production database.
+ * </p>
+ * 
+ * <p>
+ * Test coverage includes:
+ * </p>
+ * <ul>
+ * <li>Adding students to the database</li>
+ * <li>Removing students and cascade deletion of enrollments</li>
+ * <li>Updating student information</li>
+ * <li>Adding and removing course enrollments</li>
+ * <li>Calculating average grades</li>
+ * <li>Searching students by various criteria</li>
+ * <li>Exporting and importing student data via CSV</li>
+ * </ul>
+ * 
+ * <p>
+ * The test database is created before all tests and cleaned between each test
+ * to ensure test isolation and repeatability.
+ * </p>
+ * 
+ * @author Student Management System Team
+ * @version 1.0
+ * @since 1.0
+ */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class StudentManagerImplTest {
 
