@@ -1,4 +1,4 @@
-# PDF README
+# README
 
 ## Overview
 The **Student Management System** is a JavaFX desktop application that lets users manage students, courses, and enrollments. It follows a clean MVC architecture, uses SQLite for persistence, and provides CRUD operations, CSV import/export, and real‑time statistics.
