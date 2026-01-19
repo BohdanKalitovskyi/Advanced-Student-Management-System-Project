@@ -56,6 +56,12 @@ public class StudentController {
     private ObservableList<Student> studentList;
     private ArrayList<Student> fullDataList = new ArrayList<>();
 
+    /**
+     * Constructs a new StudentController and initializes the system components.
+     * Sets up the manager singleton and prepares the student data list.
+     *
+     * @param view The view component of the MVC architecture.
+     */
     public StudentController(StudentView view) {
         this.view = view;
         this.manager = StudentManagerImpl.getInstance();
@@ -64,6 +70,10 @@ public class StudentController {
         initController();
     }
 
+    /**
+     * Initializes the controller by binding events and setting up the UI state.
+     * Connects all buttons to their respective actions and initializes pagination.
+     */
     private void initController() {
         // Link Table to ObservableList
         view.getStudentTable().setItems(studentList);
@@ -94,6 +104,12 @@ public class StudentController {
         });
     }
 
+    /**
+     * Creates a page of student data for the pagination control.
+     *
+     * @param pageIndex The index of the page to create.
+     * @return A {@link Node} representing the table for the specified page.
+     */
     private Node createPage(int pageIndex) {
         int fromIndex = pageIndex * ROWS_PER_PAGE;
         int toIndex = Math.min(fromIndex + ROWS_PER_PAGE, fullDataList.size());
@@ -107,6 +123,10 @@ public class StudentController {
         return new VBox(); // Dummy node, as we update items directly
     }
 
+    /**
+     * Updates the pagination control based on the current student list size.
+     * Recalculates the total number of pages and resets the UI.
+     */
     private void updatePagination() {
         int pageCount = (int) Math.ceil((double) fullDataList.size() / ROWS_PER_PAGE);
         if (pageCount == 0)
@@ -123,6 +143,10 @@ public class StudentController {
         updateCharts();
     }
 
+    /**
+     * Refreshes the student table by fetching the latest data from the database.
+     * This operation is performed asynchronously to keep the UI responsive.
+     */
     private void refreshTable() {
         Task<ArrayList<Student>> task = new Task<>() {
             @Override
@@ -144,6 +168,10 @@ public class StudentController {
         new Thread(task).start();
     }
 
+    /**
+     * Handles the addition of a new student to the system.
+     * Validates input fields, creates a {@link Student} object, and persists it.
+     */
     private void addStudent() {
         try {
             String name = view.getNameField().getText();
@@ -206,6 +234,10 @@ public class StudentController {
         }
     }
 
+    /**
+     * Removes the currently selected student from the database.
+     * Prompts the user with a confirmation dialog before deletion.
+     */
     private void removeStudent() {
         var selectedItems = new ArrayList<>(view.getStudentTable().getSelectionModel().getSelectedItems());
         if (selectedItems.isEmpty()) {
@@ -239,6 +271,11 @@ public class StudentController {
         }
     }
 
+    /**
+     * Updates an existing student's information in the database.
+     * Values are taken from the current input fields and applied to the selected
+     * student.
+     */
     private void updateStudent() {
         Student selected = view.getStudentTable().getSelectionModel().getSelectedItem();
         if (selected == null) {
@@ -315,42 +352,46 @@ public class StudentController {
         });
     }
 
+    /**
+     * Updates the UI charts based on the current student data.
+     * Categorizes students into grade buckets for visualization.
+     */
     private void updateCharts() {
-        javafx.scene.chart.XYChart.Series<String, Number> series = new javafx.scene.chart.XYChart.Series<>();
-        series.setName("Grades");
-
-        int a = 0, b = 0, c = 0, d = 0, f = 0;
-
-        // Use full list for stats, not just paged view
+        int[] ranges = new int[5]; // 0-59, 60-69, 70-79, 80-89, 90-100
         for (Student s : fullDataList) {
             double g = s.getGrade();
-            if (g >= 90)
-                a++;
-            else if (g >= 80)
-                b++;
-            else if (g >= 70)
-                c++;
-            else if (g >= 60)
-                d++;
+            if (g < 60)
+                ranges[0]++;
+            else if (g < 70)
+                ranges[1]++;
+            else if (g < 80)
+                ranges[2]++;
+            else if (g < 90)
+                ranges[3]++;
             else
-                f++;
+                ranges[4]++;
         }
 
-        series.getData().add(new javafx.scene.chart.XYChart.Data<>("A (90-100)", a));
-        series.getData().add(new javafx.scene.chart.XYChart.Data<>("B (80-89)", b));
-        series.getData().add(new javafx.scene.chart.XYChart.Data<>("C (70-79)", c));
-        series.getData().add(new javafx.scene.chart.XYChart.Data<>("D (60-69)", d));
-        series.getData().add(new javafx.scene.chart.XYChart.Data<>("F (<60)", f));
-
         view.getGradeChart().getData().clear();
+        javafx.scene.chart.XYChart.Series<String, Number> series = new javafx.scene.chart.XYChart.Series<>();
+        series.setName("Grade Distribution");
+        series.getData().add(new javafx.scene.chart.XYChart.Data<>("0-59", ranges[0]));
+        series.getData().add(new javafx.scene.chart.XYChart.Data<>("60-69", ranges[1]));
+        series.getData().add(new javafx.scene.chart.XYChart.Data<>("70-79", ranges[2]));
+        series.getData().add(new javafx.scene.chart.XYChart.Data<>("80-89", ranges[3]));
+        series.getData().add(new javafx.scene.chart.XYChart.Data<>("90-100", ranges[4]));
         view.getGradeChart().getData().add(series);
     }
 
+    /**
+     * Performs a real-time search on the student list.
+     * Filters the table automatically as the user types.
+     */
     private void searchStudent() {
-        String query = view.getSearchField().getText();
+        String query = view.getSearchField().getText().toLowerCase();
         Task<ArrayList<Student>> task = new Task<>() {
             @Override
-            protected ArrayList<Student> call() throws Exception {
+            protected ArrayList<Student> call() {
                 return manager.searchStudents(query);
             }
         };
@@ -358,65 +399,78 @@ public class StudentController {
         task.setOnSucceeded(e -> {
             fullDataList = task.getValue();
             updatePagination();
-            view.appendLog("Search results for: " + query + " (" + fullDataList.size() + ")");
+            view.appendLog("Search completed for: " + query);
         });
 
         new Thread(task).start();
     }
 
+    /**
+     * Calculates the average grade of all students and displays it in an alert.
+     */
     private void calculateAverage() {
         Task<Double> task = new Task<>() {
             @Override
-            protected Double call() throws Exception {
-                // Calculate average of currently displayed (or filtered) students?
-                // Or global average? Using Logic from Manager which is global.
-                // If we want filtered average:
-                return fullDataList.stream()
-                        .mapToDouble(Student::getGrade)
-                        .average().orElse(0.0);
+            protected Double call() {
+                return manager.calculateAverageGrade();
             }
         };
 
         task.setOnSucceeded(e -> {
-            showAlert("Average Grade", String.format("Average (Current View): %.2f", task.getValue()));
+            double avg = task.getValue();
+            showAlert("Average Grade", String.format("The average grade of all students is: %.2f", avg));
+            view.appendLog("Calculated average grade: " + avg);
         });
 
         new Thread(task).start();
     }
 
+    /**
+     * Exports the current student list to a CSV file selected by the user.
+     */
     private void exportCSV() {
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Save CSV");
+        fileChooser.setTitle("Export to CSV");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
         File file = fileChooser.showSaveDialog(null);
-
         if (file != null) {
             manager.exportStudentsToCSV(file.getAbsolutePath());
-            view.appendLog("Exported to " + file.getAbsolutePath());
+            view.appendLog("Exported student data to: " + file.getName());
         }
     }
 
+    /**
+     * Imports student data from a CSV file selected by the user.
+     */
     private void importCSV() {
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Open CSV");
+        fileChooser.setTitle("Import from CSV");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
         File file = fileChooser.showOpenDialog(null);
-
         if (file != null) {
             manager.importStudentsFromCSV(file.getAbsolutePath());
-            view.appendLog("Imported from " + file.getAbsolutePath());
             refreshTable();
+            view.appendLog("Imported student data from: " + file.getName());
         }
     }
 
+    /**
+     * Clears all input fields in the student entry form.
+     */
     private void clearInputs() {
         view.getNameField().clear();
         view.getAgeSpinner().getValueFactory().setValue(20);
         view.getGradeField().clear();
-        view.getEnrollmentDatePicker().setValue(null);
+        view.getEnrollmentDatePicker().setValue(LocalDate.now());
         view.getCourseList().getSelectionModel().clearSelection();
     }
 
+    /**
+     * Helper method to show a popup alert message to the user.
+     *
+     * @param title   The title of the alert window.
+     * @param message The content message of the alert.
+     */
     private void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);

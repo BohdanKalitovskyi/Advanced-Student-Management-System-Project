@@ -1,0 +1,43 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+package core {
+    class Student {
+        - name: String
+        - age: int
+        - grade: double
+        - studentID: String
+        - enrollmentDate: LocalDate
+        - courses: ArrayList<String>
+        + calculateGPA(): double
+        + addCourse(course: String): void
+    }
+
+    interface StudentManager {
+        + addStudent(s: Student): void
+        + removeStudent(id: String): void
+        + searchStudents(q: String): ArrayList<Student>
+    }
+
+    class StudentManagerImpl {
+        - {static} instance: StudentManagerImpl
+        + getInstance(): StudentManagerImpl
+    }
+
+    StudentManagerImpl ..|> StudentManager
+    StudentManagerImpl o-- Student
+}
+
+package gui {
+    class StudentView {
+        + initializeUI(): void
+    }
+    class StudentController {
+        - view: StudentView
+        - manager: StudentManager
+    }
+    StudentController --> StudentView
+    StudentController --> StudentManager
+}
+
+@enduml

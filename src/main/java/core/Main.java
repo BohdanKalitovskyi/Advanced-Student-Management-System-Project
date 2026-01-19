@@ -44,10 +44,7 @@ class Main {
          * @param args command-line arguments (not used)
          */
         public static void main(String[] args) {
-                Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
-                        System.out.println("Unhandled exception: " + e.getMessage());
-                        e.printStackTrace();
-                });
+                Thread.setDefaultUncaughtExceptionHandler(new GlobalExceptionHandler());
 
                 Student student1 = new Student("John Doe", 20, 88.75);
 

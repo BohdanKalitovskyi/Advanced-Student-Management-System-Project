@@ -75,11 +75,20 @@ public class StudentView {
     private TabPane tabPane;
     private BarChart<String, Number> gradeChart;
 
+    /**
+     * Constructs a new StudentView and initializes the graphical components.
+     * Sets up the layout, input fields, tables, and charts.
+     */
     public StudentView() {
         mainLayout = new BorderPane();
         initializeUI();
     }
 
+    /**
+     * Initializes the user interface layout and all child components.
+     * Sets up the BorderPane layout with input forms on the left,
+     * the table and pagination in the center, and charts/logs on the right.
+     */
     private void initializeUI() {
         // Load CSS
         try {
@@ -263,7 +272,13 @@ public class StudentView {
         fade.play();
     }
 
-    private void showStudentDetails(Student student) {
+    /**
+     * Displays a modal popup window with detailed information about a student.
+     * Shows basic info and a list of enrolled courses.
+     *
+     * @param student The {@link Student} to display details for.
+     */
+    public void showStudentDetails(Student student) {
         javafx.stage.Stage detailsStage = new javafx.stage.Stage();
         detailsStage.setTitle("Student Profile");
         detailsStage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
@@ -317,6 +332,14 @@ public class StudentView {
         detailsStage.show();
     }
 
+    /**
+     * Helper method to add a labeled row to a GridPane in the details popup.
+     *
+     * @param grid  The grid to add the row to.
+     * @param row   The row index.
+     * @param label The label text.
+     * @param value The value text.
+     */
     private void addDetailRow(GridPane grid, int row, String label, String value) {
         Label lbl = new Label(label);
         lbl.getStyleClass().add("detail-label");
@@ -330,6 +353,10 @@ public class StudentView {
         grid.add(val, 1, row);
     }
 
+    /**
+     * Configures the student table columns and background properties.
+     * Defines how each column maps to the Student model properties.
+     */
     @SuppressWarnings("unchecked")
     private void setupTable() {
         studentTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);

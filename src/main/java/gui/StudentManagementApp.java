@@ -50,6 +50,7 @@ public class StudentManagementApp extends Application {
      */
     @Override
     public void start(Stage primaryStage) {
+        Thread.setDefaultUncaughtExceptionHandler(new GlobalExceptionHandler());
         try {
             BorderPane root = new BorderPane();
 

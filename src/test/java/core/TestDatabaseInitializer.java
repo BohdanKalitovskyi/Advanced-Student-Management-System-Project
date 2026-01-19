@@ -3,8 +3,22 @@ package core;
 import java.sql.Connection;
 import java.sql.Statement;
 
+/**
+ * Utility class to initialize the test database schema.
+ * Recreates the necessary table structures (students, courses, enrollments)
+ * for the test environment.
+ */
 public class TestDatabaseInitializer {
 
+    /**
+     * Initializes the test database schema by creating required tables.
+     * Tables created:
+     * <ul>
+     * <li>students: Stores student record information.</li>
+     * <li>courses: Stores course definitions.</li>
+     * <li>enrollments: Links students to courses with cascading deletions.</li>
+     * </ul>
+     */
     public static void initialize() {
         try (Connection conn = TestConnectionFactory.getConnection();
                 Statement stmt = conn.createStatement()) {

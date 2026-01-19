@@ -44,6 +44,14 @@ class StudentManagerImplTest {
 
     private StudentManagerImpl manager;
 
+    /**
+     * Sets up the test database environment before all tests.
+     * Creates a temporary database file and initializes the schema.
+     * Uses a mock implementation of StudentManagerImpl to inject the test
+     * connection.
+     *
+     * @throws java.io.IOException If the temporary file cannot be created.
+     */
     @BeforeAll
     void setupDatabase() throws java.io.IOException {
 
@@ -69,12 +77,19 @@ class StudentManagerImplTest {
         };
     }
 
+    /**
+     * Cleans the database before each test case.
+     * Removes all student records to ensure a fresh state.
+     */
     @BeforeEach
     void cleanDatabase() {
         manager.displayAllStudents()
                 .forEach(s -> manager.removeStudent(s.getStudentID()));
     }
 
+    /**
+     * Verifies that a student can be added correctly to the database.
+     */
     @Test
     void testAddStudent() {
         Student s = new Student(
@@ -91,6 +106,9 @@ class StudentManagerImplTest {
         assertEquals("John Doe", students.get(0).getName());
     }
 
+    /**
+     * Verifies that a student can be removed from the database by ID.
+     */
     @Test
     void testRemoveStudent() {
         Student s = new Student("Alice", 22, 85.0, LocalDate.now(), new ArrayList<>());
@@ -101,6 +119,9 @@ class StudentManagerImplTest {
         assertTrue(manager.displayAllStudents().isEmpty());
     }
 
+    /**
+     * Verifies that student information can be updated in the database.
+     */
     @Test
     void testUpdateStudent() {
         Student s = new Student("Bob", 21, 75.0, LocalDate.now(), new ArrayList<>());
@@ -114,6 +135,9 @@ class StudentManagerImplTest {
         assertEquals(80.0, result.getGrade());
     }
 
+    /**
+     * Verifies that course enrollments can be added and removed for a student.
+     */
     @Test
     void testAddAndRemoveCourse() {
         Student s = new Student("Eve", 23, 88.0, LocalDate.now(), new ArrayList<>());
@@ -126,6 +150,9 @@ class StudentManagerImplTest {
         assertEquals(0, manager.displayAllStudents().get(0).getCourses().size());
     }
 
+    /**
+     * Verifies that the average grade calculation is correct.
+     */
     @Test
     void testCalculateAverageGrade() {
         manager.addStudent(new Student("S1", 20, 90.0, LocalDate.now(), new ArrayList<>()));
@@ -135,6 +162,9 @@ class StudentManagerImplTest {
         assertEquals(85.0, avg);
     }
 
+    /**
+     * Verifies that students can be searched by name or ID.
+     */
     @Test
     void testSearchStudents() {
         manager.addStudent(new Student("Charlie", 22, 70.0, LocalDate.now(), new ArrayList<>()));
@@ -143,6 +173,10 @@ class StudentManagerImplTest {
         assertEquals(0, manager.searchStudents("NotFound").size());
     }
 
+    /**
+     * Verifies that exporting to CSV and importing from CSV works without data
+     * loss.
+     */
     @Test
     void testExportImportCSV() {
         String file = "test_students.csv";
@@ -161,6 +195,11 @@ class StudentManagerImplTest {
         assertEquals("Dana", manager.displayAllStudents().get(0).getName());
     }
 
+    /**
+     * Debugging helper to verify the database connection URL.
+     *
+     * @throws Exception If database access fails.
+     */
     @Test
     void debugDatabaseSource() throws Exception {
         Connection c = manager.getConnection();

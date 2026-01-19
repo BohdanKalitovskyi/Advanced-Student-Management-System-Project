@@ -153,7 +153,6 @@ public class StudentManagerImpl implements StudentManager {
                     insertPs.setInt(3, student.getAge());
                     insertPs.setDouble(4, student.getGrade());
                     insertPs.setString(5, student.getEnrollmentDate().toString());
-                    insertPs.setString(5, student.getEnrollmentDate().toString());
                     insertPs.executeUpdate();
                 }
 

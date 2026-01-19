@@ -1,0 +1,16 @@
+@startuml
+actor User
+participant StudentView
+participant StudentController
+participant StudentManagerImpl
+database SQLite
+
+User -> StudentView: Click "Add Student"
+StudentView -> StudentController: handleAddAction()
+StudentController -> StudentManagerImpl: addStudent(student)
+StudentManagerImpl -> SQLite: INSERT INTO students
+SQLite --> StudentManagerImpl: Success
+StudentManagerImpl --> StudentController: Success
+StudentController -> StudentView: updateTable()
+StudentView -> User: Show Success Alert
+@enduml
