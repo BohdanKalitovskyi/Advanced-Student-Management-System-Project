@@ -7,7 +7,6 @@ import java.io.PrintWriter;
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Comparator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -259,16 +258,34 @@ public class StudentManagerImpl implements StudentManager {
      * <p>
      * For each student, this method also loads their enrolled courses from
      * the enrollments table. The returned list is sorted alphabetically by
-     * student name.
+     * student name by default.
      * </p>
      * 
      * @return an ArrayList of all students with their course enrollments
      */
     @Override
     public ArrayList<Student> displayAllStudents() {
+        return displayAllStudents("name");
+    }
+
+    /**
+     * Retrieves all students from the database with custom sorting.
+     * 
+     * @param sortBy the field to sort by (e.g., "name", "grade", "age")
+     * @return an ArrayList of all students with their course enrollments
+     */
+    @Override
+    public ArrayList<Student> displayAllStudents(String sortBy) {
         ArrayList<Student> students = new ArrayList<>();
 
-        String sql = "SELECT * FROM students";
+        // Map internal sort names to SQL columns
+        String orderColumn = switch (sortBy.toLowerCase()) {
+            case "grade" -> "grade DESC";
+            case "age" -> "age";
+            default -> "name";
+        };
+
+        String sql = "SELECT * FROM students ORDER BY " + orderColumn;
 
         try (Connection conn = getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql);
@@ -298,11 +315,8 @@ public class StudentManagerImpl implements StudentManager {
             }
 
         } catch (SQLException e) {
-            System.err.println("Database error: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Database error while retrieving students", e);
         }
-
-        students.sort(Comparator.comparing(Student::getName));
 
         return students;
     }
@@ -324,6 +338,36 @@ public class StudentManagerImpl implements StudentManager {
                 .filter(g -> g >= 0 && g <= 100)
                 .average()
                 .orElse(0.0);
+    }
+
+    /**
+     * Calculates the average grade for students enrolled in a specific course.
+     * 
+     * @param courseCode the course to filter by
+     * @return the average grade of the filtered group
+     */
+    @Override
+    public double calculateAverageGrade(String courseCode) {
+        String sql = """
+                    SELECT AVG(s.grade) as avg_grade
+                    FROM students s
+                    JOIN enrollments e ON s.studentID = e.studentID
+                    WHERE e.courseCode = ? AND s.grade >= 0 AND s.grade <= 100
+                """;
+
+        try (Connection conn = getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, courseCode);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getDouble("avg_grade");
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Database error while calculating average for course: {}", courseCode, e);
+        }
+        return 0.0;
     }
 
     /**

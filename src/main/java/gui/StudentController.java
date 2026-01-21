@@ -93,6 +93,10 @@ public class StudentController {
         view.getAvgButton().setOnAction(e -> calculateAverage());
         view.getExportButton().setOnAction(e -> exportCSV());
         view.getImportButton().setOnAction(e -> importCSV());
+        view.getSortButton().setOnAction(e -> showSortWindow());
+
+        // Group Filter Listener
+        view.getGroupFilter().setOnAction(e -> refreshTable());
 
         // Live search
         view.getSearchField().textProperty().addListener((observable, oldValue, newValue) -> {
@@ -146,23 +150,65 @@ public class StudentController {
     /**
      * Refreshes the student table by fetching the latest data from the database.
      * This operation is performed asynchronously to keep the UI responsive.
+     * Supports filtering by group (course) and sorting.
      */
     private void refreshTable() {
+        String selectedGroup = view.getGroupFilter().getValue();
+        boolean filterApplied = selectedGroup != null && !selectedGroup.equals("All Students");
+
         Task<ArrayList<Student>> task = new Task<>() {
             @Override
             protected ArrayList<Student> call() throws Exception {
-                return manager.displayAllStudents();
+                ArrayList<Student> data = manager.displayAllStudents();
+                if (filterApplied) {
+                    data.removeIf(s -> !s.getCourses().contains(selectedGroup));
+                }
+                return data;
             }
         };
 
         task.setOnSucceeded(e -> {
             fullDataList = task.getValue();
             updatePagination();
-            view.appendLog("Refreshed list. Total students: " + fullDataList.size());
+            String filterMsg = filterApplied ? " [Filtered by: " + selectedGroup + "]" : "";
+            view.appendLog("Refreshed list. Total students: " + fullDataList.size() + filterMsg);
         });
 
         task.setOnFailed(e -> {
             view.appendLog("Error refreshing table: " + task.getException().getMessage());
+        });
+
+        new Thread(task).start();
+    }
+
+    /**
+     * Refreshes the table with a specific sort order.
+     * 
+     * @param sortBy The field to sort by.
+     */
+    private void refreshTable(String sortBy) {
+        String selectedGroup = view.getGroupFilter().getValue();
+        boolean filterApplied = selectedGroup != null && !selectedGroup.equals("All Students");
+
+        Task<ArrayList<Student>> task = new Task<>() {
+            @Override
+            protected ArrayList<Student> call() throws Exception {
+                ArrayList<Student> data = manager.displayAllStudents(sortBy);
+                if (filterApplied) {
+                    data.removeIf(s -> !s.getCourses().contains(selectedGroup));
+                }
+                return data;
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            fullDataList = task.getValue();
+            updatePagination();
+            view.appendLog("Sorted list by: " + sortBy);
+        });
+
+        task.setOnFailed(e -> {
+            view.appendLog("Error sorting table: " + task.getException().getMessage());
         });
 
         new Thread(task).start();
@@ -405,24 +451,59 @@ public class StudentController {
         new Thread(task).start();
     }
 
-    /**
-     * Calculates the average grade of all students and displays it in an alert.
-     */
     private void calculateAverage() {
+        String selectedGroup = view.getGroupFilter().getValue();
+        boolean filterApplied = selectedGroup != null && !selectedGroup.equals("All Students");
+
         Task<Double> task = new Task<>() {
             @Override
             protected Double call() {
+                if (filterApplied) {
+                    return manager.calculateAverageGrade(selectedGroup);
+                }
                 return manager.calculateAverageGrade();
             }
         };
 
         task.setOnSucceeded(e -> {
             double avg = task.getValue();
-            showAlert("Average Grade", String.format("The average grade of all students is: %.2f", avg));
-            view.appendLog("Calculated average grade: " + avg);
+            String title = filterApplied ? "Average Grade - " + selectedGroup : "Average Grade";
+            String scope = filterApplied ? "students in " + selectedGroup : "all students";
+
+            showAlert(title, String.format("The average grade of %s is: %.2f", scope, avg));
+            view.appendLog("Calculated average for " + scope + ": " + avg);
         });
 
         new Thread(task).start();
+    }
+
+    private void showSortWindow() {
+        Alert dialog = new Alert(Alert.AlertType.NONE);
+        dialog.setTitle("Sort Options");
+        dialog.setHeaderText("Choose sorting criteria:");
+
+        try {
+            dialog.getDialogPane().getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
+        } catch (Exception ignored) {
+        }
+
+        ButtonType sortByName = new ButtonType("Name (A-Z)");
+        ButtonType sortByGrade = new ButtonType("Grade (High-Low)");
+        ButtonType sortByAge = new ButtonType("Age (Youngest)");
+        ButtonType cancel = new ButtonType("Cancel", javafx.scene.control.ButtonBar.ButtonData.CANCEL_CLOSE);
+
+        dialog.getButtonTypes().addAll(sortByName, sortByGrade, sortByAge, cancel);
+
+        Optional<ButtonType> result = dialog.showAndWait();
+        if (result.isPresent()) {
+            if (result.get() == sortByName) {
+                refreshTable("name");
+            } else if (result.get() == sortByGrade) {
+                refreshTable("grade");
+            } else if (result.get() == sortByAge) {
+                refreshTable("age");
+            }
+        }
     }
 
     /**
@@ -476,6 +557,12 @@ public class StudentController {
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(message);
+
+        try {
+            alert.getDialogPane().getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
+        } catch (Exception ignored) {
+        }
+
         alert.showAndWait();
     }
 }

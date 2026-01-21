@@ -75,6 +75,15 @@ public interface StudentManager {
     ArrayList<Student> displayAllStudents();
 
     /**
+     * Retrieves all students from the system with custom sorting.
+     * 
+     * @param sortBy the field to sort by (e.g., "name", "grade", "age")
+     * @return an ArrayList containing all students in the system sorted by the
+     *         specified field
+     */
+    ArrayList<Student> displayAllStudents(String sortBy);
+
+    /**
      * Calculates the average grade across all students.
      * 
      * <p>
@@ -85,6 +94,14 @@ public interface StudentManager {
      * @return the average grade as a percentage (0.0-100.0)
      */
     double calculateAverageGrade();
+
+    /**
+     * Calculates the average grade for a specific course/group.
+     * 
+     * @param courseCode the unique identifier of the course
+     * @return the average grade of students enrolled in the specified course
+     */
+    double calculateAverageGrade(String courseCode);
 
     /**
      * Searches for students matching the given query.

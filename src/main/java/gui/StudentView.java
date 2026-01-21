@@ -64,6 +64,10 @@ public class StudentView {
     private Button searchButton;
     private Button exportButton;
     private Button importButton;
+    private Button sortButton;
+
+    // Filter
+    private ComboBox<String> groupFilter;
 
     // Search
     private TextField searchField;
@@ -195,11 +199,25 @@ public class StudentView {
         importButton.getStyleClass().add("button-success");
         importButton.setTooltip(new Tooltip("Load student data from a CSV file"));
 
+        sortButton = new Button("Sort & Filter");
+        sortButton.getStyleClass().add("button-warning");
+        sortButton.setTooltip(new Tooltip("Open sorting and group selection window"));
+
+        groupFilter = new ComboBox<>();
+        groupFilter.setPromptText("Filter by Group");
+        groupFilter.getItems().add("All Students");
+        groupFilter.getItems().addAll("CS101", "CS102", "MATH101", "MATH201", "ENG101", "PHYS101", "CHEM101",
+                "HIST101", "ART101", "MUS101", "BIO101", "ECON101", "POLS101");
+        groupFilter.setValue("All Students");
+
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        topPanel.getChildren().addAll(new Label("Search:"), searchField, searchButton, spacer, avgButton, exportButton,
-                importButton);
+        Label groupLabel = new Label("Group:");
+        groupLabel.getStyleClass().add("filter-label");
+
+        topPanel.getChildren().addAll(new Label("Search:"), searchField, searchButton, spacer, groupLabel,
+                groupFilter, sortButton, avgButton, exportButton, importButton);
 
         // --- Center Panel: Tabs ---
         tabPane = new TabPane();
@@ -283,8 +301,8 @@ public class StudentView {
         detailsStage.setTitle("Student Profile");
         detailsStage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
 
-        VBox content = new VBox(20);
-        content.setPadding(new Insets(40));
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(30, 40, 30, 40));
         content.getStyleClass().add("student-details-popup");
 
         // Student Name - BIG HEADER
@@ -324,8 +342,12 @@ public class StudentView {
 
         content.getChildren().addAll(nameLabel, sep1, grid, sep2, buttonBox);
 
-        javafx.scene.Scene scene = new javafx.scene.Scene(content, 520, 460);
-        scene.getStylesheets().addAll(mainLayout.getScene().getStylesheets());
+        javafx.scene.Scene scene = new javafx.scene.Scene(content, 520, 440);
+        try {
+            scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
+        } catch (Exception e) {
+            System.err.println("Could not load styles.css for popup: " + e.getMessage());
+        }
 
         detailsStage.setScene(scene);
         detailsStage.setResizable(false);
@@ -446,6 +468,14 @@ public class StudentView {
 
     public Button getImportButton() {
         return importButton;
+    }
+
+    public Button getSortButton() {
+        return sortButton;
+    }
+
+    public ComboBox<String> getGroupFilter() {
+        return groupFilter;
     }
 
     public TextField getSearchField() {
