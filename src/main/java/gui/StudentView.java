@@ -342,7 +342,8 @@ public class StudentView {
 
         content.getChildren().addAll(nameLabel, sep1, grid, sep2, buttonBox);
 
-        javafx.scene.Scene scene = new javafx.scene.Scene(content, 520, 440);
+        appendLog("Opening details for student: " + student.getName());
+        javafx.scene.Scene scene = new javafx.scene.Scene(content, 520, -1);
         try {
             scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
         } catch (Exception e) {

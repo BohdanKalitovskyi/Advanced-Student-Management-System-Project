@@ -451,6 +451,10 @@ public class StudentController {
         new Thread(task).start();
     }
 
+    /**
+     * Calculates the average grade and displays it in an alert.
+     * Supports calculating average for the currently selected group.
+     */
     private void calculateAverage() {
         String selectedGroup = view.getGroupFilter().getValue();
         boolean filterApplied = selectedGroup != null && !selectedGroup.equals("All Students");
@@ -477,6 +481,9 @@ public class StudentController {
         new Thread(task).start();
     }
 
+    /**
+     * Displays a small window with sorting options.
+     */
     private void showSortWindow() {
         Alert dialog = new Alert(Alert.AlertType.NONE);
         dialog.setTitle("Sort Options");

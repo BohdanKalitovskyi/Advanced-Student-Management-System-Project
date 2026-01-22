@@ -52,6 +52,7 @@ public final class ConnectionFactory {
      * @return a new Connection object to the students database
      * @throws SQLException if a database access error occurs or the URL is invalid
      */
+
     public static Connection getConnection() throws SQLException {
         return DriverManager.getConnection(URL);
     }
